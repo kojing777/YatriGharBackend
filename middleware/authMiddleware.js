@@ -11,14 +11,30 @@ export const protect = async (req, res, next) => {
         
         console.log('Auth middleware - userId:', userId);
         
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
         
         if (!user) {
-            console.log('User not found in database. User ID:', userId);
-            return res.status(404).json({ 
-                success: false, 
-                message: 'User not found. Please try logging out and logging in again.' 
-            });
+            console.log('User not found in database. Creating user with ID:', userId);
+            
+            // Create user with minimal data if not found
+            // This handles cases where webhook failed or user was created before webhook was set up
+            try {
+                user = await User.create({
+                    _id: userId,
+                    username: 'User', // Default username, can be updated later
+                    email: 'temp@example.com', // Temporary email, should be updated
+                    image: '', // Default empty image
+                    role: 'user',
+                    recentSearchedCities: []
+                });
+                console.log('User created successfully with ID:', userId);
+            } catch (createError) {
+                console.error('Error creating user in auth middleware:', createError);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Unable to create user. Please try again.' 
+                });
+            }
         }
         
         req.user = user;
