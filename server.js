@@ -23,8 +23,8 @@ app.use(express.json());
 // Clerk middleware (must come early)
 app.use(clerkMiddleware());
 
-// Clerk webhooks route
-app.use('/api/clerk', clerkWebhooks);
+// Clerk webhooks route (must be before auth middleware)
+app.post('/api/clerk', clerkWebhooks);
 
 app.get('/', (req, res) => 
   res.send('Backend is running Buddy !')
