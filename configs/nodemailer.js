@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
     host: process.env.BREVO_SMTP_SERVER,
     port: process.env.BREVO_SMTP_PORT,
     secure: false, // Use TLS
