@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { clerkClient } from '@clerk/express';
 
 //middkware to check if user is authenticated
 export const protect = async (req, res, next) => {
@@ -16,17 +17,20 @@ export const protect = async (req, res, next) => {
         if (!user) {
             console.log('User not found in database. Creating user with ID:', userId);
             
-            // Create user with minimal data if not found
-            // This handles cases where webhook failed or user was created before webhook was set up
+            // Get user data from Clerk and create user in database
             try {
-                user = await User.create({
+                const clerkUser = await clerkClient.users.getUser(userId);
+                
+                const userData = {
                     _id: userId,
-                    username: 'User', // Default username, can be updated later
-                    email: 'temp@example.com', // Temporary email, should be updated
-                    image: '', // Default empty image
+                    username: (clerkUser.firstName || '') + " " + (clerkUser.lastName || '') || 'User',
+                    email: clerkUser.emailAddresses[0]?.emailAddress || 'temp@example.com',
+                    image: clerkUser.imageUrl || 'https://via.placeholder.com/150',
                     role: 'user',
                     recentSearchedCities: []
-                });
+                };
+                
+                user = await User.create(userData);
                 console.log('User created successfully with ID:', userId);
             } catch (createError) {
                 console.error('Error creating user in auth middleware:', createError);
