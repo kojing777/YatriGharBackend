@@ -13,7 +13,7 @@ export const getUserData = async (req, res) => {
 export const storeRecentSearchedCities = async (req, res) => {
     try {
         const { recentSearchedCity } = req.body;
-        const user = await req.user;
+        const user = req.user; // Remove await - req.user is already the user object
 
         if (user.recentSearchedCities.length < 3) {
             user.recentSearchedCities.push(recentSearchedCity);
